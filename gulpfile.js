@@ -14,7 +14,7 @@ const autoprefixer = require('gulp-autoprefixer');
 
 const esSource = 'src/scripts/**/*.js'; 
 const sassSource = 'src/stylesheets/**/*.scss'; 
-const pugSource = 'src/views/**/*.pug';
+const pugSource = 'src/views/*.pug';
 const imgSource = 'src/images/*'
 const miscMediaSource = 'src/media/*'
 
@@ -22,7 +22,7 @@ const jsDist = 'dist/scripts';
 const cssDist = 'dist/stylesheets'; 
 const htmlDist = 'dist/views'; 
 const imgDist = 'dist/images'
-const miscMediaDist = 'src/media/*'
+const miscMediaDist = 'dist/media'
 
 
 gulp.task('babel', () => {
@@ -31,6 +31,7 @@ gulp.task('babel', () => {
         .pipe(babel({
             presets: ['env']
         }))
+        .on('error', swallowError)
         .pipe(concat('scripts.js'))
         .pipe(sourcemaps.write('.'))
         .pipe(gulp.dest(jsDist));
@@ -47,13 +48,16 @@ gulp.task('pug', () => {
     return gulp.src(pugSource)
     .pipe(pug({
         // pug options here:
-    }));
+    }))
+    .on('error', swallowError)
+    .pipe(gulp.dest(htmlDist));
 });
 
 gulp.task('images', () =>
     gulp.src(imgSource)
         .pipe(imagemin())
         .pipe(gulp.dest(imgDist))
+        .on('error', swallowError)
 );
 
 gulp.task('media', () => {
@@ -70,5 +74,13 @@ gulp.task('watch', () => {
     gulp.watch(sassSource, ['sass']);
     gulp.watch(pugSource, ['pug']);
     gulp.watch(imgSource, ['images']);
-    gulp.watch(miscMedia, ['media']);
+    gulp.watch(miscMediaSource, ['media']);
 });
+
+function swallowError (error) {
+
+  // If you want details of the error in the console
+  console.log(error.toString())
+
+  this.emit('end')
+}
